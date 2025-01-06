@@ -109,7 +109,7 @@ with DAG(
     'weather_dashboard',
     default_args=default_args,
     description='Fetch and store weather data for multiple cities',
-    schedule_interval='@hourly',  # Run every hour
+    schedule_interval='*/5 * * * *',  # Run every 5 minutes
     catchup=False,
 ) as dag:
     
