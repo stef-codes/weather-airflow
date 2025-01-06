@@ -21,13 +21,25 @@ def create_bucket_if_not_exists(**context):
     try:
         s3_client.head_bucket(Bucket=BUCKET_NAME)
         print(f"Bucket {BUCKET_NAME} exists")
-    except:
-        print(f"Creating bucket {BUCKET_NAME}")
-        try:
-            s3_client.create_bucket(Bucket=BUCKET_NAME)
-            print(f"Successfully created bucket {BUCKET_NAME}")
-        except Exception as e:
-            print(f"Error creating bucket: {e}")
+    except s3_client.exceptions.ClientError as e:
+        # Check if the error is because the bucket does not exist
+        error_code = e.response['Error']['Code']
+        if error_code == '404':  # If bucket does not exist
+            print(f"Creating bucket {BUCKET_NAME}")
+            try:
+                # Specify the region if necessary (example: 'us-west-1')
+                s3_client.create_bucket(
+                    Bucket=BUCKET_NAME,
+                    CreateBucketConfiguration={
+                        'LocationConstraint': 'us-east-2'  # replace with your region
+                    }
+                )
+                print(f"Successfully created bucket {BUCKET_NAME}")
+            except Exception as e:
+                print(f"Error creating bucket: {e}")
+                raise
+        else:
+            print(f"Error checking bucket: {e}")
             raise
 
 def fetch_weather_data(**context):
